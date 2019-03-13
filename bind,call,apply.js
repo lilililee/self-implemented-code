@@ -14,6 +14,7 @@ Function.prototype._apply = function(context, args) {
 }
 
 // test
+/* 
 const a = { a: 1, b: 2 }
 const log = function(p) {
   console.log(p)
@@ -22,3 +23,4 @@ const log = function(p) {
 log._bind(a, 33)()    // undefined  return 2
 log._call(a, 33)      // 33         return 2
 log._apply(a, [33])   // [33]       return 2
+*/
