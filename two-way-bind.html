@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>two-way-bind</title>
+  </head>
+  <body>
+    <input id="my-input" v-model="value" />
+    <p id="my-text"></p>
+    <script>
+      // 原始数据
+      var data = {
+        value: 'some text'
+      }
+
+      // 获取相关元素
+      const myInput = document.getElementById('my-input')
+      const myText = document.getElementById('my-text')
+
+      // 执行双向绑定
+      toWayBind()
+      
+
+
+      // 渲染函数
+      function render(val) {
+        myInput.innerText = val
+        myText.value = val
+      }
+
+      // 订阅类
+      function Observer() {
+        this.subs = []
+      }
+      Observer.prototype.addSub = function(cb) {
+        this.subs.push(cb)
+      }
+      Observer.prototype.notify = function(context = null, ...args) {
+        this.subs.forEach(cb => {
+          cb.apply(context, args)
+        })
+      }
+
+      // 观察数据
+      function observe(target, key) {
+        // 用另一变量存储值
+        let val = target[key]
+
+        // 设置订阅内容，实现 model -> view 数据传递方式
+        const w = target.__ob__ ? target.__ob__ : new Observer()
+        debugger
+        w.addSub(render)
+        Object.defineProperty(target, '__ob__', { value: w })
+
+        // 定义绑定目标数据的 set 和 get
+        Object.defineProperty(target, key, {
+          enumerable: true,
+          configurable: true,
+          get() {
+            return val
+          },
+          set(v) {
+            // 通知订阅者更新
+            // 在vue中是触发 render渲染 和 ob 回调
+            target.__ob__.notify(null, v)
+            val = v
+          }
+        })
+
+        // 进行初次渲染
+        target.__ob__.notify(null, val)
+      }
+
+      // 双向绑定
+      function toWayBind() {
+        // 监听 input 内容， 实现 view -> model 数据传递
+        myInput.addEventListener('input', e => {
+          data.value = e.target.value
+        })
+
+        // 监听 data.value 变化， 实现 model -> view 数据传递
+        observe(data, 'value')
+      }
+    </script>
+  </body>
+</html>

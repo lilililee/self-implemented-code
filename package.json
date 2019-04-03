@@ -1,0 +1,29 @@
+{
+  "name": "self-implemented-code",
+  "version": "1.0.0",
+  "description": "自己实现的一些经典代码",
+  "main": "Promise.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lilililee/self-implemented-code.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lilililee/self-implemented-code/issues"
+  },
+  "homepage": "https://github.com/lilililee/self-implemented-code#readme",
+  "devDependencies": {
+    "eslint": "^5.16.0",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-import": "^2.16.0",
+    "eslint-plugin-node": "^8.0.1",
+    "eslint-plugin-promise": "^4.1.1",
+    "eslint-plugin-standard": "^4.0.0",
+    "jest": "^24.6.0"
+  }
+}
