@@ -1,7 +1,2 @@
-<<<<<<< HEAD
-node_modules
-.vscode
-=======
 /node_modules
 /.vscode
->>>>>>> feature/jest-test
