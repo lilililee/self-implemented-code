@@ -1,12 +1,12 @@
-function handleReturnPromise(_this, returnPromise, index) {
+function handleReturnPromise (_this, returnPromise, index) {
   _this.origin.PromiseStatus = returnPromise.PromiseStatus
   _this.origin.PromiseValue = returnPromise.PromiseValue
   returnPromise._thenAndCatch = returnPromise._thenAndCatch.concat(_this._thenAndCatch.slice(index + 1))
   returnPromise.origin = _this
 }
 
-function doRejectCallback(_this) {
-  _this._thenAndCatch.some(function(thenResolveFn, index) {
+function doRejectCallback (_this) {
+  _this._thenAndCatch.some(function (thenResolveFn, index) {
     if (thenResolveFn.type !== 'catch') return false
     var thenOrReturn = thenResolveFn.callback(_this.PromiseValue)
     if (thenOrReturn instanceof _Promise) {
@@ -22,8 +22,8 @@ function doRejectCallback(_this) {
   })
 }
 
-function doResolveCallback(_this) {
-  _this._thenAndCatch.some(function(thenResolveFn, index) {
+function doResolveCallback (_this) {
+  _this._thenAndCatch.some(function (thenResolveFn, index) {
     if (thenResolveFn.type !== 'then') return false
     var thenOrReturn = thenResolveFn.callback(_this.PromiseValue)
     if (thenOrReturn instanceof _Promise) {
@@ -41,7 +41,7 @@ var PENDING = 'pending'
 var RESOLVED = 'resolved'
 var REJECTED = 'rejected'
 var count = 0
-function _Promise(fn) {
+function _Promise (fn) {
   if (this instanceof _Promise === false) {
     throw new TypeError("Please use the 'new' operator")
   }
@@ -58,7 +58,7 @@ function _Promise(fn) {
   return this // 支持 then 链式调用
 }
 
-_Promise.prototype.then = function(thenResolveFn) {
+_Promise.prototype.then = function (thenResolveFn) {
   this._thenAndCatch.push({
     type: 'then',
     callback: thenResolveFn
@@ -69,7 +69,7 @@ _Promise.prototype.then = function(thenResolveFn) {
   return this
 }
 
-_Promise.prototype.catch = function(thenResolveFn) {
+_Promise.prototype.catch = function (thenResolveFn) {
   this._thenAndCatch.push({
     type: 'catch',
     callback: thenResolveFn
@@ -80,9 +80,9 @@ _Promise.prototype.catch = function(thenResolveFn) {
   return this
 }
 
-_Promise.prototype.resolve = function(arg) {
+_Promise.prototype.resolve = function (arg) {
   var _this = this
-  setTimeout(function() {
+  setTimeout(function () {
     _this.PromiseStatus = RESOLVED
     _this.PromiseValue = arg
     if (_this !== _this.origin) {
@@ -93,9 +93,9 @@ _Promise.prototype.resolve = function(arg) {
   })
 }
 
-_Promise.prototype.reject = function(arg) {
+_Promise.prototype.reject = function (arg) {
   var _this = this
-  setTimeout(function() {
+  setTimeout(function () {
     _this.PromiseStatus = RESOLVED
     _this.PromiseValue = arg
     if (_this !== _this.origin) {
@@ -106,125 +106,62 @@ _Promise.prototype.reject = function(arg) {
   })
 }
 
-_Promise.resolve = function(arg) {
-  return new _Promise(function(resolve, reject) {
+_Promise.resolve = function (arg) {
+  return new _Promise(function (resolve, reject) {
     resolve(arg)
   })
 }
 
-_Promise.reject = function(arg) {
-  return new _Promise(function(resolve, reject) {
+_Promise.reject = function (arg) {
+  return new _Promise(function (resolve, reject) {
     reject(arg)
   })
 }
 
-_Promise.all = function(arg) {
+_Promise.all = function (arg) {
   if (!Array.isArray(arg)) {
     throw new TypeError('You must pass an array to Promise.all().')
   }
-  return new _Promise(function(resolve, reject) {
+  return new _Promise(function (resolve, reject) {
     var count = 0
-    var result = []
-    function doCount(res) {
+    // var result = []
+    function doCount (res) {
       count++
       if (count === arg.length) {
         resolve(
-          arg.map(function(p) {
+          arg.map(function (p) {
             return p.PromiseValue
           })
         )
       }
       return res
     }
-    arg.forEach(function(p) {
+    arg.forEach(function (p) {
       p.then(doCount)
     })
   })
 }
 
-_Promise.race = function(arg) {
+_Promise.race = function (arg) {
   if (!Array.isArray(arg)) {
     throw new TypeError('You must pass an array to Promise.all().')
   }
-  var p = new _Promise(function(resolve, reject) {
-    var count = 0
-    var result = []
-    function doCount(res) {
+  var p = new _Promise(function (resolve, reject) {
+    // var count = 0
+    // var result = []
+    function doCount (res) {
       if (p.PromiseStatus === PENDING) {
         resolve(res)
       }
       return res
     }
-    arg.forEach(function(p) {
+    arg.forEach(function (p) {
       p.then(doCount)
     })
   })
   return p
 }
 
-// test
-/*
-const p = _Promise
-// const p = Promise
-
-// all, race 测试
-const s2 = new p(resolve => {
-  setTimeout(() => {
-    resolve(2)
-  }, 100)
-})
-const s1 = new p(resolve => {
-  setTimeout(() => {
-    resolve(1)
-  }, 200)
-})
-const all = p.all([s1, s2])
-const race = p.race([s1, s2])
-setTimeout(() => {
-  console.log('all', all)
-  console.log('race', race)
-}, 2000)
-// 输出
-// all, _Promise{ PromiseStatus: "resolved", PromiseValue: [1, 2] }
-// race, _Promise{ PromiseStatus: "resolved", PromiseValue: 2 }
-
-// then, catch 测试
-const a = new p((r, j) => {
-  console.log('Promise start')
-  r(111)
-})
-  .then(res => {
-    console.log('fn1 res', res)
-  })
-  .then(res => {
-    console.log('fn2 res', res)
-    return new p((r, j) => {
-      console.log('Promise2 start')
-      j(222)
-    })
-  })
-  .catch(res => {
-    console.log('fn3 res', res)
-    return 333
-  })
-  .catch(res => {
-    console.log('fn4 res', res)
-    return 444
-  })
-  .then(res => {
-    console.log('fn5 res', res)
-    return 555
-  })
-
-console.log('Promise end')
-
-// 输出
-// Promise start
-// Promise end
-// fn1 res 111
-// fn2 res undefined
-// Promise2 start
-// fn3 res 222
-// fn5 res 333
-
-*/
+module.exports = {
+  _Promise
+}
