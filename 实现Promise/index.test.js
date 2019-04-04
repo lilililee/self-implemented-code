@@ -13,22 +13,26 @@ test('test: _Promise', async () => {
   let flag4 = 0
   let flag5 = 0
   let flag6 = 0
+  let flag7 = 0
 
   const p = new __Promise((resolve, reject) => {
     setTimeout(() => {
       resolve(1)
     }, 50)
   })
+    // 测试是否能正确获取 resolve 传递的值
     .then(f => {
       flag1 = f // 1
       return 2
     })
+    // 测试是否能正确获取上一个 then 返回值
     .then(f => {
       flag2 = f // 2
       return new __Promise((resolve, reject) => {
         resolve(3)
       })
     })
+    // 测试是否能正确获取上一个 then 返回 Promise 中 resolve 的值
     .then(f => {
       flag3 = f // 3
       return 5
@@ -37,14 +41,21 @@ test('test: _Promise', async () => {
     .catch(f => {
       flag4 = f // 0
     })
+    // 测试是否能跳过catch
     .then(f => {
       flag5 = f // 5
       return new __Promise((resolve, reject) => {
         reject(6)
       })
     })
+    // 测试是否能正确获取上一个 then 返回 Promise 中 reject 的值
     .catch(f => {
       flag6 = f // 6
+      return 7
+    })
+    // 测试是否能继续执行 catch 之后的 then（ catch 会将状态标记为 RESOLVED）
+    .then(f => {
+      flag7 = 7
     })
   expect(flag1 === 0).toBeTruthy()
   await sleep(100)
@@ -54,71 +65,102 @@ test('test: _Promise', async () => {
   expect(flag4 === 0).toBeTruthy()
   expect(flag5 === 5).toBeTruthy()
   expect(flag6 === 6).toBeTruthy()
+  expect(flag7 === 7).toBeTruthy()
 })
 
-// test
-/*
-const p = _Promise
-// const p = Promise
+test('test: _Promise.resolve', async () => {
+  let flag1 = 0
+  let flag2 = 0
+  let flag3 = 0
 
-// all, race 测试
-const s2 = new p(resolve => {
-  setTimeout(() => {
-    resolve(2)
-  }, 100)
-})
-const s1 = new p(resolve => {
-  setTimeout(() => {
-    resolve(1)
-  }, 200)
-})
-const all = p.all([s1, s2])
-const race = p.race([s1, s2])
-setTimeout(() => {
-  console.log('all', all)
-  console.log('race', race)
-}, 2000)
-// 输出
-// all, _Promise{ PromiseStatus: "resolved", PromiseValue: [1, 2] }
-// race, _Promise{ PromiseStatus: "resolved", PromiseValue: 2 }
-
-// then, catch 测试
-const a = new p((r, j) => {
-  console.log('Promise start')
-  r(111)
-})
-  .then(res => {
-    console.log('fn1 res', res)
-  })
-  .then(res => {
-    console.log('fn2 res', res)
-    return new p((r, j) => {
-      console.log('Promise2 start')
-      j(222)
+  const p = _Promise
+    .resolve(1)
+    .then(f => {
+      flag1 = f
+      return 3
     })
-  })
-  .catch(res => {
-    console.log('fn3 res', res)
-    return 333
-  })
-  .catch(res => {
-    console.log('fn4 res', res)
-    return 444
-  })
-  .then(res => {
-    console.log('fn5 res', res)
-    return 555
-  })
+    // 不会执行
+    .catch(f => {
+      flag2 = f
+    })
+    // 会跳过catch执行
+    .then(f => {
+      flag3 = f
+    })
+  expect(flag1 === 0).toBeTruthy()
+  await sleep(100)
+  expect(flag1 === 1).toBeTruthy()
+  expect(flag2 === 0).toBeTruthy()
+  expect(flag3 === 3).toBeTruthy()
+})
 
-console.log('Promise end')
+test('test: _Promise.reject', async () => {
+  let flag1 = 0
+  let flag2 = 0
+  let flag3 = 0
+  let flag4 = 0
 
-// 输出
-// Promise start
-// Promise end
-// fn1 res 111
-// fn2 res undefined
-// Promise2 start
-// fn3 res 222
-// fn5 res 333
+  const p = _Promise
+    .reject(2)
+    // 不会执行
+    .then(f => {
+      flag1 = f
+    })
+    .catch(f => {
+      flag2 = f
+      return 4
+    })
+    // 不会执行
+    .catch(f => {
+      flag3 = f
+    })
+    .then(f => {
+      flag4 = f
+    })
+  expect(flag1 === 0).toBeTruthy()
+  await sleep(100)
+  expect(flag1 === 0).toBeTruthy()
+  expect(flag2 === 2).toBeTruthy()
+  expect(flag3 === 0).toBeTruthy()
+  expect(flag4 === 4).toBeTruthy()
+})
 
+test('test: _Promise.all', async () => {
+  let flag1 = 0
+  const s1 = new _Promise(resolve => {
+    setTimeout(() => {
+      resolve(1)
+    }, 100)
+  })
+  const s2 = new _Promise(resolve => {
+    setTimeout(() => {
+      resolve(2)
+    }, 50)
+  })
+  const all = _Promise.all([s1, s2]).then(f => {
+    flag1 = f
+  })
+  expect(flag1 === 0).toBeTruthy()
+  await sleep(150)
+  expect(flag1).toEqual([1, 2])
+})
 
+test('test: _Promise.race', async () => {
+  let flag1 = 0
+  const s1 = new _Promise(resolve => {
+    setTimeout(() => {
+      resolve(1)
+    }, 100)
+  })
+  const s2 = new _Promise(resolve => {
+    setTimeout(() => {
+      resolve(2)
+    }, 50)
+  })
+  const race = _Promise.race([s1, s2]).then(f => {
+    flag1 = f
+  })
+  expect(flag1 === 0).toBeTruthy()
+  await sleep(150)
+  expect(flag1 === 2).toBeTruthy()
+})

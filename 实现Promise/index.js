@@ -5,16 +5,31 @@ function handleReturnPromise (_this, returnPromise, index) {
   returnPromise.origin = _this
 }
 
+function doResolveCallback (_this) {
+  _this._thenAndCatch.some(function (fn, index) {
+    if (fn.type !== 'then') return false
+    var thenReturn = fn.callback(_this.PromiseValue)
+    if (thenReturn instanceof _Promise) {
+      handleReturnPromise(_this, thenReturn, index)
+      return true
+    } else {
+      _this.PromiseValue = thenReturn
+      _this.origin.PromiseValue = thenReturn
+    }
+  })
+  _this._thenAndCatch = []
+}
+
 function doRejectCallback (_this) {
-  _this._thenAndCatch.some(function (thenResolveFn, index) {
-    if (thenResolveFn.type !== 'catch') return false
-    var thenOrReturn = thenResolveFn.callback(_this.PromiseValue)
-    if (thenOrReturn instanceof _Promise) {
-      handleReturnPromise(_this, thenOrReturn, index)
+  _this._thenAndCatch.some(function (fn, index) {
+    if (fn.type !== 'catch') return false
+    var catchReturn = fn.callback(_this.PromiseValue)
+    if (catchReturn instanceof _Promise) {
+      handleReturnPromise(_this, catchReturn, index)
     } else {
       _this.PromiseStatus = RESOLVED // catch 执行后状态改为 RESOLVED
-      _this.PromiseValue = thenOrReturn
-      _this.origin.PromiseValue = thenOrReturn
+      _this.PromiseValue = catchReturn
+      _this.origin.PromiseValue = catchReturn
       _this._thenAndCatch = _this._thenAndCatch.slice(index + 1)
       doResolveCallback(_this) // 并且执行后续的所有 then
     }
@@ -22,25 +37,11 @@ function doRejectCallback (_this) {
   })
 }
 
-function doResolveCallback (_this) {
-  _this._thenAndCatch.some(function (thenResolveFn, index) {
-    if (thenResolveFn.type !== 'then') return false
-    var thenOrReturn = thenResolveFn.callback(_this.PromiseValue)
-    if (thenOrReturn instanceof _Promise) {
-      handleReturnPromise(_this, thenOrReturn, index)
-      return true
-    } else {
-      _this.PromiseValue = thenOrReturn
-      _this.origin.PromiseValue = thenOrReturn
-    }
-  })
-  _this._thenAndCatch = []
-}
 var PENDING = 'pending'
 // var FULFILLED = 'fulfilled'
 var RESOLVED = 'resolved'
 var REJECTED = 'rejected'
-var count = 0
+var pid = 0
 function _Promise (fn) {
   if (this instanceof _Promise === false) {
     throw new TypeError("Please use the 'new' operator")
@@ -48,7 +49,7 @@ function _Promise (fn) {
   if (typeof fn !== 'function') {
     throw new TypeError(`_Promise resolver ${fn} is not a function`)
   }
-  this.count = count++
+  this.pid = pid++
   this.PromiseStatus = PENDING // _Promise状态
   this.PromiseValue = undefined // _Promise值
   this.origin = this // 最初调用的 _Promise ， 如果在then中return了新的 _Promise ，会根据该字段修改覆盖原先 _Promise
@@ -58,10 +59,10 @@ function _Promise (fn) {
   return this // 支持 then 链式调用
 }
 
-_Promise.prototype.then = function (thenResolveFn) {
+_Promise.prototype.then = function (fn) {
   this._thenAndCatch.push({
     type: 'then',
-    callback: thenResolveFn
+    callback: fn
   })
   if (this.PromiseStatus === RESOLVED) {
     doResolveCallback(this)
@@ -69,10 +70,10 @@ _Promise.prototype.then = function (thenResolveFn) {
   return this
 }
 
-_Promise.prototype.catch = function (thenResolveFn) {
+_Promise.prototype.catch = function (fn) {
   this._thenAndCatch.push({
     type: 'catch',
-    callback: thenResolveFn
+    callback: fn
   })
   if (this.PromiseStatus === REJECTED) {
     doRejectCallback(this)
