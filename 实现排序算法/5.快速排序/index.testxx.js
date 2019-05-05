@@ -18,6 +18,9 @@ const randomList = createList(100000)
 const sortResult = sortList(randomList) //                  11ms 60427
 
 test('test: quickSort', () => {
-  expect(quickSort(randomList)).toEqual(sortResult) //  30ms 12497500
+  console.time('quickSort(quickSort)')
+  const quickSortResult = quickSort(randomList)
+  console.timeEnd('quickSort(quickSort)')
+  expect(quickSortResult).toEqual(sortResult) //  30ms 12497500
   // expect(quickSort2(randomList)).toEqual(sortResult) // 29ms 12497500
 })

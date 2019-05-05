@@ -6,7 +6,7 @@ function swap (arr, index1, index2) {
   arr[index2] = temp
 }
 
-// 选择排序，基础
+// 快速排序，基础
 function quickSort (_arr) {
   // console.time('quickSort(基础)')
   const arr = [..._arr]
@@ -25,12 +25,10 @@ function quickSort (_arr) {
     }
     i++
   }
-  // console.timeEnd('quickSort(基础)')
-  // console.log('count(基础)', count)
-  return [...quickSort(left), reference, ...quickSort(right)]
+  return quickSort(left).concat(reference, quickSort(right))
 }
 
-// 选择排序，双向
+// 快速排序，双向
 // @TODO
 function quickSort2 (_arr, _left, _right) {
   // console.time('quickSort(基础)')
