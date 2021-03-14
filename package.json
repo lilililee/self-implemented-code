@@ -4,7 +4,7 @@
   "description": "自己实现的一些经典代码",
   "main": "Promise.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest --watch ./实现Promise2"
   },
   "repository": {
     "type": "git",
