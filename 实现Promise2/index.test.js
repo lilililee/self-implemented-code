@@ -1,8 +1,8 @@
-const Promise = require('./index')
+const Promise = require('./index3')
 
 const sleep = (time) => new Promise((resolve) => setTimeout(resolve, time))
 
-test('test:Promise', async () => {
+test.only('test:Promise', async () => {
   let flag1 = 0
   let flag2 = 0
   let flag3 = 0
@@ -56,6 +56,7 @@ test('test:Promise', async () => {
     })
     // 测试是否能跳过catch
     .then((f) => {
+      console.log('f: ', f)
       flag5 = f // 5
       return new Promise((resolve, reject) => {
         reject(6)

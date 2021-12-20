@@ -4,7 +4,8 @@
   "description": "自己实现的一些经典代码",
   "main": "Promise.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest --watch ./实现Promise2",
+    "test-promise": "promises-aplus-tests ./实现Promise2/aplues.test"
   },
   "repository": {
     "type": "git",
@@ -25,5 +26,8 @@
     "eslint-plugin-promise": "^4.1.1",
     "eslint-plugin-standard": "^4.0.0",
     "jest": "^24.6.0"
+  },
+  "dependencies": {
+    "promises-aplus-tests": "^2.1.2"
   }
 }

@@ -1,27 +1,20 @@
-// 防抖
-const debounce = (fn, time = 600) => {
-  let timer = null
-  return (...args) => {
+exports.debounce = (fn, time) => {
+  let timer = 0
+  return function (...args) {
     clearTimeout(timer)
     timer = setTimeout(() => {
-      fn.apply(this, args)
+      fn(...args)
     }, time)
   }
 }
 
-// 节流
-const throttle = (fn, time = 600) => {
-  let startTime = 0
-  return (...args) => {
+exports.throttle = (fn, time) => {
+  let t = 0
+  return function (...args) {
     const now = Date.now()
-    if (now - startTime > time) {
-      fn.apply(this, args)
-      startTime = now
+    if (now - t > time) {
+      t = now
+      fn(...args)
     }
   }
-}
-
-module.exports = {
-  debounce,
-  throttle
 }
