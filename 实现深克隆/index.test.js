@@ -1,4 +1,4 @@
-const cloneDeep = require('./')
+const cloneDeep = require('./index2')
 
 // 原始对象
 const source = {
@@ -29,7 +29,7 @@ test('test: cloneDeep', () => {
   expect(source.null === cloneSource.null).toBeTruthy()
   expect(source.symbol === cloneSource.symbol).toBeTruthy()
   expect(source.function === cloneSource.function).toBeTruthy()
-  expect(source.regexp === cloneSource.regexp).toBeTruthy()
+  expect(source.regexp !== cloneSource.regexp).toBeTruthy()
 
   // 深层引用对比
   expect(source.object !== cloneSource.object).toBeTruthy()
